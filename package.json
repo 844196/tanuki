@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --open",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "deploy": "push-dir --verbose --cleanup --dir dist --branch gh-pages"
   },
   "dependencies": {
+    "buefy": "^0.6.5",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",
+    "vue-sortable-tree": "^1.2.1",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
@@ -18,8 +21,11 @@
     "@vue/cli-service": "^3.0.0-beta.9",
     "@vue/eslint-config-standard": "^3.0.0-beta.9",
     "@vue/eslint-config-typescript": "^3.0.0-beta.9",
+    "node-sass": "^4.9.0",
     "pug": "^2.0.3",
     "pug-loader": "^2.4.0",
+    "push-dir": "^0.4.1",
+    "sass-loader": "^7.0.1",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1",
     "vue-template-compiler": "^2.5.13"
