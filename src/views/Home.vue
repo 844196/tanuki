@@ -1,6 +1,6 @@
 <template lang="pug">
 main#main.container
-  sortable-tree(:data="data", childrenAttr="children", mixinParentKey="$parent", closeStateKey="fold")
+  sortable-tree(:data="model", childrenAttr="children", mixinParentKey="$parent", closeStateKey="fold")
     template(slot-scope="{ item }")
       div.item(v-if="item.name !== undefined")
         b-field
@@ -26,82 +26,16 @@ main#main.container
             button.button.is-small.is-warning(@click="item.$parent.removeChild(item)") &times;
   hr
   div
-    b-input(size="is-small", type="textarea", v-model="dump")
+    b-input(size="is-small", type="textarea", v-model="json")
   hr
   div
-    b-input(size="is-small", type="textarea", v-model="data.toMarkdown()", readonly)
+    b-input(size="is-small", type="textarea", :value="markdown", readonly)
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 import SortableTree from 'vue-sortable-tree'
-
-interface RawData {
-  name: string
-  point: number
-  children: Array<RawData>
-  fold: boolean
-}
-
-class Data {
-  public name = ''
-  public point = 10
-  public children: Array<Data> = []
-  public fold = false
-
-  toggleFold (): void {
-    this.fold = !this.fold
-  }
-
-  hasChild (): boolean {
-    return this.children.length > 0
-  }
-
-  totalPoint (): number {
-    if (this.children.length === 0) {
-      return this.point
-    }
-    return this.children.reduce((acc, child) => {
-      acc += child.totalPoint()
-      return acc
-    }, 0)
-  }
-
-  addChild (): void {
-    this.children.push(new Data())
-  }
-
-  removeChild (target: Data): void {
-    const idx = this.children.findIndex(child => child === target)
-    this.children.splice(idx, 1)
-  }
-
-  static from ({ name, point, children, fold }: RawData): Data {
-    const self = new Data()
-    self.name = name
-    self.point = point
-    self.children = children.map(child => Data.from(child))
-    self.fold = fold
-    return self
-  }
-
-  toMarkdown (): string {
-    let str = `* ${this.name}: ${this.totalPoint()}人日`
-    if (this.hasChild()) {
-      str += this.children
-        .reduce((acc, child) => {
-          acc = `${acc}\n${child.toMarkdown()}`
-          return acc
-        }, '')
-        .split('\n')
-        .map(e => '    ' + e)
-        .join('\n')
-    }
-    return str
-  }
-}
-
-const data = new Data()
+import Task from '@/models/task'
 
 export default Vue.extend({
   name: 'Home',
@@ -110,22 +44,20 @@ export default Vue.extend({
   },
   data () {
     return {
-      data
+      model: Task.empty()
     }
   },
   computed: {
-    dump: {
+    json: {
       get (): string {
-        return JSON.stringify(this.data, (k, v) => {
-          if (k === '$parent') {
-            return undefined
-          }
-          return v
-        }, '  ')
+        return JSON.stringify(this.model.deflate(), null, 2)
       },
       set (value: string): void {
-        this.data = Data.from(JSON.parse(value))
+        this.model = Task.inflate(JSON.parse(value))
       }
+    },
+    markdown (): string {
+      return this.model.toMarkdown()
     }
   }
 })
